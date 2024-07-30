@@ -1,0 +1,178 @@
+{% extends 'header.html' %}
+{% load static %}
+{% block content %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+
+	
+	<!-- breadcrumb-section -->
+	<div class="breadcrumb-section breadcrumb-bg">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-8 offset-lg-2 text-center">
+					<div class="breadcrumb-text">
+						<p>Fresh and Organic</p>
+						<h1>Cart</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end breadcrumb section -->
+	{% if cart %}
+	<!-- cart -->
+	<div class="cart-section mt-150 mb-150">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-8 col-md-12">
+					<div class="cart-table-wrap">
+						<table class="cart-table">
+							<thead class="cart-table-head">
+								<tr class="table-head-row">
+									<th class="product-remove"></th>
+									<th class="product-image">Product Image</th>
+									<th class="product-name">Name</th>
+									<th class="product-price">Price</th>
+									<th class="product-quantity">Quantity</th>
+									<th class="product-total">Total</th>
+								</tr>
+							</thead>
+							{% for i in cart %}
+							<tbody>
+								<tr class="table-body-row">
+									<td class="product-remove"><a href="{% url 'dcart' pk=i.pk %}"><i class="far fa-window-close"></i></a></td>
+									<td class="product-image"><img src="{{i.product.pimage.url}}"></td>
+									<td class="product-name">{{i.product.pname}}</td>
+									<td class="product-price">{{i.product.pprice}}</td>
+									<form method="post" action="{% url 'changeqty' pk=i.pk%}">
+										{% csrf_token %}
+									<td class="product-quantity"><input type="number" value="{{i.cqty}}" name="cqty" onchange="this.form.submit()"></td>
+									</form>
+									<td class="product-total">{{i.tprice}}</td>
+								</tr>
+								
+							</tbody>
+							{% endfor %}
+						</table>
+					</div>
+				</div>
+
+				<div class="col-lg-4">
+					<div class="total-section">
+						<table class="total-table">
+							<thead class="total-table-head">
+								<tr class="table-total-row">
+									<th>Total</th>
+									<th>Price</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr class="total-data">
+									<td><strong>Subtotal: </strong></td>
+									<td>{{net}}</td>
+								</tr>
+								<tr class="total-data">
+									<td><strong>Shipping: </strong></td>
+									<td>{{ship}}</td>
+								</tr>
+								<tr class="total-data">
+									<td><strong>Total: </strong></td>
+									<td>{{sc}}</td>
+								</tr>
+							</tbody>
+						</table>
+						<div class="cart-buttons" style="margin-left: 100px;">
+							<a href="checkout.html" class="boxed-btn black" id="rzp-button1">Check Out</a>
+						</div>
+					</div>
+
+					<div class="coupon-section">
+						<h3>Apply Coupon</h3>
+						<div class="coupon-form-wrap">
+							<form action="cart.html" method="post">
+								{% csrf_token %}
+								<p><input type="text" placeholder="Coupon" name="coupon"></p>
+								<p><input type="submit" value="Apply"></p>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end cart -->
+	
+
+	<!-- logo carousel -->
+	<div class="logo-carousel-section">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="logo-carousel-inner">
+						<div class="single-logo-item">
+							<img src="{% static 'img/company-logos/1.png' %}" alt="">
+						</div>
+						<div class="single-logo-item">
+							<img src="{% static 'img/company-logos/2.png' %}" alt="">
+						</div>
+						<div class="single-logo-item">
+							<img src="{% static 'img/company-logos/3.png' %}" alt="">
+						</div>
+						<div class="single-logo-item">
+							<img src="{% static 'img/company-logos/4.png' %}" alt="">
+						</div>
+						<div class="single-logo-item">
+							<img src="{% static 'img/company-logos/5.png' %}" alt="">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% else %}
+	<center><h4>Added products will be displayed here</h4></center>
+	{% endif %}
+	<!-- end logo carousel -->
+	<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+                    <script>
+                        var options = {
+                            "key": "rzp_test_3iCOPLbchUyIwQ", // Enter the Key ID generated from the Dashboard
+                            "amount": "{{context.payment.amount}}",// Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+                            "currency": "INR",
+                            "name": "Fruitkha",
+                            "description": "Test Payment", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+                            "handler": function (response){
+                
+                                window.location.href=`http://127.0.0.1:8000//sucess?razorpay_payment_id=${response.razorpay_payment_id}`
+                
+                                // alert(response.razorpay_payment_id);
+                                // alert(response.razorpay_order_id);
+                                
+                            },
+                            "theme": {
+                                "color": "#94CA21"
+                            }
+                        };
+                        var rzp1 = new Razorpay(options);
+                        rzp1.on('payment.failed', function (response){
+                                alert(response.error.code);
+                                alert(response.error.description);
+                                alert(response.error.source);
+                                alert(response.error.step);
+                                alert(response.error.reason);
+                                alert(response.error.metadata.order_id);
+                                alert(response.error.metadata.payment_id);
+                        });
+                        document.getElementById('rzp-button1').onclick = function(e){
+                            rzp1.open();
+                            e.preventDefault();
+                        }
+                    </script>    
+
+	
+</body>
+</html>
+{% endblock %}
